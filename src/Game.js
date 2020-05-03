@@ -1,16 +1,12 @@
 import React from "react";
 import Board from "./Board";
 import Swal from "sweetalert2";
+import { connect } from "react-redux";
+import { startNewRound, setScore, publishMove } from "./actions/game";
 
 class Game extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      squares: Array(9).fill(""), // 3x3 board
-      xScore: 0,
-      oScore: 0,
-      whosTurn: this.props.myTurn,
-    };
 
     this.turn = "X";
     this.gameOver = false;
@@ -26,11 +22,7 @@ class Game extends React.Component {
 
       // Start a new round
       else if (msg.message.reset) {
-        this.setState({
-          squares: Array(9).fill(""),
-          whosTurn: this.props.myTurn,
-        });
-
+        this.props.startNewRound({ whosTurn: this.props.myTurn });
         this.turn = "X";
         this.gameOver = false;
         this.counter = 0;
@@ -110,20 +102,15 @@ class Game extends React.Component {
 
   // Update score for the winner
   announceWinner = (winner) => {
-    let pieces = {
-      X: this.state.xScore,
-      O: this.state.oScore,
-    };
-
     if (winner === "X") {
-      pieces["X"] += 1;
-      this.setState({
-        xScore: pieces["X"],
+      this.props.setScore({
+        xScore: this.props.xScore + 1,
+        oScore: this.props.oScore,
       });
     } else {
-      pieces["O"] += 1;
-      this.setState({
-        oScore: pieces["O"],
+      this.props.setScore({
+        xScore: this.props.xScore,
+        oScore: this.props.oScore + 1,
       });
     }
     // End the game once there is a winner
@@ -168,29 +155,29 @@ class Game extends React.Component {
 
   // Opponent's move is published to the board
   publishMove = (index, piece) => {
-    const squares = this.state.squares;
+    const squares = this.props.squares;
 
     squares[index] = piece;
     this.turn = squares[index] === "X" ? "O" : "X";
 
-    this.setState({
+    this.props.publishMove({
       squares: squares,
-      whosTurn: !this.state.whosTurn,
+      whosTurn: !this.props.whosTurn,
     });
 
     this.checkForWinner(squares);
   };
 
   onMakeMove = (index) => {
-    const squares = this.state.squares;
+    const squares = this.props.squares;
 
     // Check if the square is empty and if it's the player's turn to make a move
     if (!squares[index] && this.turn === this.props.piece) {
       squares[index] = this.props.piece;
 
-      this.setState({
+      this.props.publishMove({
         squares: squares,
-        whosTurn: !this.state.whosTurn,
+        whosTurn: !this.props.whosTurn,
       });
 
       // Other player's turn to make a move
@@ -214,25 +201,25 @@ class Game extends React.Component {
   render() {
     let status;
     // Change to current player's turn
-    status = `${this.state.whosTurn ? "Your turn" : "Opponent's turn"}`;
+    status = `${this.props.whosTurn ? "Your turn" : "Opponent's turn"}`;
 
     return (
       <div className="game">
         <p className="status-info">{status}</p>
         <div className="board">
           <Board
-            squares={this.state.squares}
+            squares={this.props.squares}
             onClick={(index) => this.onMakeMove(index)}
           />
         </div>
 
         <div className="scores-container">
           <div>
-            <p>Player X: {this.state.xScore} </p>
+            <p>Player X: {this.props.xScore} </p>
           </div>
 
           <div>
-            <p>Player O: {this.state.oScore} </p>
+            <p>Player O: {this.props.oScore} </p>
           </div>
         </div>
       </div>
@@ -240,4 +227,18 @@ class Game extends React.Component {
   }
 }
 
-export default Game;
+const mapStateToProps = (state, props) => ({
+  ...props,
+  xScore: state.game.xScore,
+  oScore: state.game.oScore,
+  squares: state.game.squares,
+  whosTurn: state.game.whosTurn,
+});
+
+const mapDispatchToProps = {
+  startNewRound,
+  setScore,
+  publishMove,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Game);
