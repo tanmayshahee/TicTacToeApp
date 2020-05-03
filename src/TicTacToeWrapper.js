@@ -14,6 +14,7 @@ import PubNubReact from "pubnub-react";
 import Swal from "sweetalert2";
 import shortid from "shortid";
 import "./Game.css";
+import { gapi } from "gapi-script";
 
 class TicTacToeWrapper extends Component {
   constructor(props) {
@@ -171,6 +172,11 @@ class TicTacToeWrapper extends Component {
     });
   };
 
+  logout = () => {
+    console.log("logout user");
+    gapi.auth2.getAuthInstance().disconnect();
+  };
+
   render() {
     return (
       <div>
@@ -189,6 +195,10 @@ class TicTacToeWrapper extends Component {
             >
               {" "}
               Play Game
+            </div>
+            <div className="logout-btn" onClick={() => this.logout()}>
+              {" "}
+              Logout
             </div>
           </>
         )}
@@ -231,14 +241,25 @@ class TicTacToeWrapper extends Component {
             )}
 
             {this.props.isPlaying && (
-              <Game
-                pubnub={this.pubnub}
-                gameChannel={this.gameChannel}
-                piece={this.props.piece}
-                isRoomCreator={this.props.isRoomCreator}
-                myTurn={this.props.myTurn}
-                endGame={this.endGame}
-              />
+              <>
+                <div
+                  className="view-profile"
+                  onClick={() =>
+                    this.props.toggleGameBoard({ showGameBoard: false })
+                  }
+                >
+                  {" "}
+                  View Profile
+                </div>
+                <Game
+                  pubnub={this.pubnub}
+                  gameChannel={this.gameChannel}
+                  piece={this.props.piece}
+                  isRoomCreator={this.props.isRoomCreator}
+                  myTurn={this.props.myTurn}
+                  endGame={this.endGame}
+                />
+              </>
             )}
           </>
         )}

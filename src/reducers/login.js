@@ -13,7 +13,11 @@ export default (state = initialState, action) => {
       let newState = { ...state };
       newState.userInfo = { ...state.userInfo };
       newState.userInfo = payload.userInfo;
-      newState.isUserLoggedIn = true;
+      return newState;
+    }
+    case types.TOGGLE_LOGIN_STATE: {
+      let newState = { ...state };
+      newState.isUserLoggedIn = payload.isUserLoggedIn;
       return newState;
     }
     default:

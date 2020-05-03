@@ -3,7 +3,7 @@ import AppLogin from "./login/AppLogin";
 import { connect } from "react-redux";
 import TicTacToeWrapper from "./TicTacToeWrapper";
 import { gapi } from "gapi-script";
-import { setUserInfo } from "./actions/login";
+import { setUserInfo, toggleLoginState } from "./actions/login";
 
 const App = (props) => {
   let auth2;
@@ -22,13 +22,14 @@ const App = (props) => {
 
   function signinChanged(val) {
     console.log("Signin state changed to ", val);
+    props.toggleLoginState({ isUserLoggedIn: val });
   }
 
-  function signOut() {
-    auth2.signOut().then(function () {
-      console.log("User signed out.");
-    });
-  }
+  // function signOut() {
+  //   auth2.signOut().then(function () {
+  //     console.log("User signed out.");
+  //   });
+  // }
 
   function userChanged(user) {
     if (user.getId()) {
@@ -57,6 +58,7 @@ const mapStateToProps = (state, props) => ({
 
 const mapDispatchToProps = {
   setUserInfo,
+  toggleLoginState,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
